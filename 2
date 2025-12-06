@@ -1,0 +1,219 @@
+--[[
+	WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
+]]
+
+
+local Converted = {
+	["_ScreenGui"] = Instance.new("ScreenGui");
+	["_Frame"] = Instance.new("Frame");
+	["_TextLabel"] = Instance.new("TextLabel");
+	["_ScrollingFrame"] = Instance.new("ScrollingFrame");
+	["_UIListLayout"] = Instance.new("UIListLayout");
+	["_TextLabel1"] = Instance.new("TextLabel");
+	["_SearchAgainButton"] = Instance.new("TextButton");
+	["_FeedbackLabel"] = Instance.new("TextLabel");
+	["_LocalScript"] = Instance.new("LocalScript");
+	["_LocalScript1"] = Instance.new("LocalScript");
+}
+
+-- Properties:
+
+Converted["_ScreenGui"].ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+Converted["_ScreenGui"].Parent = game:GetService("CoreGui")
+
+Converted["_Frame"].BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+Converted["_Frame"].BackgroundTransparency = 0.6000000238418579
+Converted["_Frame"].BorderColor3 = Color3.fromRGB(0, 0, 0)
+Converted["_Frame"].BorderSizePixel = 0
+Converted["_Frame"].Position = UDim2.new(0.206441075, 0, 0.100719422, 0)
+Converted["_Frame"].Size = UDim2.new(0, 766, 0, 417)
+Converted["_Frame"].Parent = Converted["_ScreenGui"]
+
+Converted["_TextLabel"].Font = Enum.Font.FredokaOne
+Converted["_TextLabel"].RichText = true
+Converted["_TextLabel"].Text = "EventSpammer Pro"
+Converted["_TextLabel"].TextColor3 = Color3.fromRGB(255, 255, 255)
+Converted["_TextLabel"].TextScaled = true
+Converted["_TextLabel"].TextSize = 14
+Converted["_TextLabel"].TextStrokeTransparency = 0
+Converted["_TextLabel"].TextWrapped = true
+Converted["_TextLabel"].BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Converted["_TextLabel"].BackgroundTransparency = 1
+Converted["_TextLabel"].BorderColor3 = Color3.fromRGB(0, 0, 0)
+Converted["_TextLabel"].BorderSizePixel = 0
+Converted["_TextLabel"].Position = UDim2.new(0.169712797, 0, -0.0383693054, 0)
+Converted["_TextLabel"].Size = UDim2.new(0, 505, 0, 100)
+Converted["_TextLabel"].Parent = Converted["_Frame"]
+
+Converted["_ScrollingFrame"].ScrollBarImageColor3 = Color3.fromRGB(0, 0, 0)
+Converted["_ScrollingFrame"].Active = true
+Converted["_ScrollingFrame"].BackgroundColor3 = Color3.fromRGB(83.00000265240669, 83.00000265240669, 83.00000265240669)
+Converted["_ScrollingFrame"].BorderColor3 = Color3.fromRGB(0, 0, 0)
+Converted["_ScrollingFrame"].BorderSizePixel = 0
+Converted["_ScrollingFrame"].Position = UDim2.new(0.828981698, 0, 0, 0)
+Converted["_ScrollingFrame"].Size = UDim2.new(0, 146, 0, 417)
+Converted["_ScrollingFrame"].Parent = Converted["_Frame"]
+
+Converted["_UIListLayout"].SortOrder = Enum.SortOrder.LayoutOrder
+Converted["_UIListLayout"].Parent = Converted["_ScrollingFrame"]
+
+Converted["_TextLabel1"].Font = Enum.Font.Highway
+Converted["_TextLabel1"].RichText = true
+Converted["_TextLabel1"].Text = "Welcome to EventSpammer Pro! This tool displays all RemoteEvents in ReplicatedStorage as buttons. Click them to fire the event. Toggle the visibility of the GUI using the Left Control Key (LftCtrl). Use the Scroll bar to navigate the events. With this gui, you can interact with every remote event and spam events. You can't fire events that require arguments or conditions, or modify and create events. - Gent"
+Converted["_TextLabel1"].TextColor3 = Color3.fromRGB(120.00000804662704, 120.00000804662704, 120.00000804662704)
+Converted["_TextLabel1"].TextScaled = true
+Converted["_TextLabel1"].TextSize = 14
+Converted["_TextLabel1"].TextStrokeColor3 = Color3.fromRGB(255, 255, 255)
+Converted["_TextLabel1"].TextStrokeTransparency = 0
+Converted["_TextLabel1"].TextWrapped = true
+Converted["_TextLabel1"].BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Converted["_TextLabel1"].BackgroundTransparency = 1
+Converted["_TextLabel1"].BorderColor3 = Color3.fromRGB(0, 0, 0)
+Converted["_TextLabel1"].BorderSizePixel = 0
+Converted["_TextLabel1"].Position = UDim2.new(0, 0, 0.172661871, 0)
+Converted["_TextLabel1"].Size = UDim2.new(0, 635, 0, 345)
+Converted["_TextLabel1"].Parent = Converted["_Frame"]
+
+Converted["_SearchAgainButton"].Font = Enum.Font.FredokaOne
+Converted["_SearchAgainButton"].RichText = true
+Converted["_SearchAgainButton"].Text = "Search again"
+Converted["_SearchAgainButton"].TextColor3 = Color3.fromRGB(255, 255, 255)
+Converted["_SearchAgainButton"].TextScaled = true
+Converted["_SearchAgainButton"].TextSize = 14
+Converted["_SearchAgainButton"].TextStrokeTransparency = 0
+Converted["_SearchAgainButton"].TextWrapped = true
+Converted["_SearchAgainButton"].BackgroundColor3 = Color3.fromRGB(61.00000396370888, 61.00000396370888, 61.00000396370888)
+Converted["_SearchAgainButton"].BorderColor3 = Color3.fromRGB(0, 0, 0)
+Converted["_SearchAgainButton"].BorderSizePixel = 0
+Converted["_SearchAgainButton"].Position = UDim2.new(0.828981698, 0, -0.119904079, 0)
+Converted["_SearchAgainButton"].Size = UDim2.new(0, 146, 0, 50)
+Converted["_SearchAgainButton"].Name = "SearchAgainButton"
+Converted["_SearchAgainButton"].Parent = Converted["_Frame"]
+
+Converted["_FeedbackLabel"].Font = Enum.Font.FredokaOne
+Converted["_FeedbackLabel"].Text = "-Feedback-"
+Converted["_FeedbackLabel"].TextColor3 = Color3.fromRGB(255, 255, 255)
+Converted["_FeedbackLabel"].TextScaled = true
+Converted["_FeedbackLabel"].TextSize = 14
+Converted["_FeedbackLabel"].TextStrokeTransparency = 0
+Converted["_FeedbackLabel"].TextWrapped = true
+Converted["_FeedbackLabel"].BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Converted["_FeedbackLabel"].BackgroundTransparency = 1
+Converted["_FeedbackLabel"].BorderColor3 = Color3.fromRGB(0, 0, 0)
+Converted["_FeedbackLabel"].BorderSizePixel = 0
+Converted["_FeedbackLabel"].Position = UDim2.new(0.31592688, 0, 0.983213425, 0)
+Converted["_FeedbackLabel"].Size = UDim2.new(0, 200, 0, 50)
+Converted["_FeedbackLabel"].Name = "FeedbackLabel"
+Converted["_FeedbackLabel"].Parent = Converted["_Frame"]
+
+-- Fake Module Scripts:
+
+local fake_module_scripts = {}
+
+
+-- Fake Local Scripts:
+
+local function XBKUFQG_fake_script() -- Fake Script: StarterGui.ScreenGui.Frame.LocalScript
+    local script = Instance.new("LocalScript")
+    script.Name = "LocalScript"
+    script.Parent = Converted["_Frame"]
+    local req = require
+    local require = function(obj)
+        local fake = fake_module_scripts[obj]
+        if fake then
+            return fake()
+        end
+        return req(obj)
+    end
+
+	local replicatedStorage = game:GetService("ReplicatedStorage")
+	local scrollingFrame = script.Parent:WaitForChild("ScrollingFrame")
+	local searchAgainButton = script.Parent:WaitForChild("SearchAgainButton")
+	local feedbackLabel = script.Parent:WaitForChild("FeedbackLabel") -- The label at the bottom for "Firing Event..."
+	
+	-- Clear all existing buttons in the ScrollingFrame
+	local function clearButtons()
+		for _, child in pairs(scrollingFrame:GetChildren()) do
+			if child:IsA("TextButton") then
+				child:Destroy()
+			end
+		end
+	end
+	
+	-- Create buttons for all RemoteEvents in ReplicatedStorage
+	local function searchRemoteEvents()
+		clearButtons()
+	
+		for _, instance in pairs(replicatedStorage:GetDescendants()) do
+			if instance:IsA("RemoteEvent") then
+				local button = Instance.new("TextButton")
+				button.Size = UDim2.new(1, 0, 0, 30)
+				button.BackgroundColor3 = Color3.fromRGB(255, 200, 200)
+				button.TextColor3 = Color3.fromRGB(0, 0, 0)
+				button.Text = instance.Name
+				button.Parent = scrollingFrame
+	
+				-- Fire the RemoteEvent on button click
+				button.MouseButton1Click:Connect(function()
+					feedbackLabel.Text = "Firing Event..."
+					feedbackLabel.Visible = true
+	
+					-- Fire the event
+					instance:FireServer()
+	
+					-- Update feedback and fade it out
+					task.wait(0.5)
+					feedbackLabel.Text = "Fired"
+					task.wait(0.5)
+					feedbackLabel:TweenPosition(
+						UDim2.new(feedbackLabel.Position.X.Scale, 0, 1.5, 0), -- Move out of view
+						Enum.EasingDirection.Out,
+						Enum.EasingStyle.Quad,
+						0.5,
+						true,
+						function()
+							feedbackLabel.Visible = false
+							feedbackLabel.Position = UDim2.new(0.5, 0, 1, 0) -- Reset position
+						end
+					)
+				end)
+			end
+		end
+	end
+	
+	-- Set up the "Search Again" button
+	searchAgainButton.MouseButton1Click:Connect(function()
+		searchRemoteEvents()
+	end)
+	
+	-- Initial search for RemoteEvents
+	searchRemoteEvents()
+	
+end
+local function ZIXB_fake_script() -- Fake Script: StarterGui.ScreenGui.LocalScript
+    local script = Instance.new("LocalScript")
+    script.Name = "LocalScript"
+    script.Parent = Converted["_ScreenGui"]
+    local req = require
+    local require = function(obj)
+        local fake = fake_module_scripts[obj]
+        if fake then
+            return fake()
+        end
+        return req(obj)
+    end
+
+	local userInputService = game:GetService("UserInputService")
+	local screenGui = script.Parent
+	
+	-- Toggle GUI visibility with LeftCtrl
+	userInputService.InputBegan:Connect(function(input, gameProcessed)
+		if not gameProcessed and input.KeyCode == Enum.KeyCode.LeftControl then
+			screenGui.Enabled = not screenGui.Enabled
+		end
+	end)
+	
+end
+
+coroutine.wrap(XBKUFQG_fake_script)()
+coroutine.wrap(ZIXB_fake_script)()
