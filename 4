@@ -1,0 +1,672 @@
+--[[
+	WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
+]]
+--[[
+	WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
+]]
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerStorage = game:GetService("ServerStorage")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local playerGui = player.PlayerGui
+
+-- Error logging function
+local function logError(message)
+    print("Error in RemoteEventGUI: " .. tostring(message))
+end
+
+-- Debug print to confirm script start
+print("RemoteEventGUI: Script started")
+
+-- Create loading screen
+local success, result = pcall(function()
+    local loadingGui = Instance.new("ScreenGui")
+    loadingGui.Name = "LoadingGui"
+    loadingGui.IgnoreGuiInset = true
+    loadingGui.Parent = playerGui
+    print("RemoteEventGUI: Loading GUI created")
+    local loadingFrame = Instance.new("Frame")
+    loadingFrame.Size = UDim2.new(0.3, 0, 0.1, 0)
+    loadingFrame.Position = UDim2.new(0.35, 0, 0.45, 0)
+    loadingFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    loadingFrame.BorderSizePixel = 0
+    loadingFrame.Parent = loadingGui
+    local loadingText = Instance.new("TextLabel")
+    loadingText.Size = UDim2.new(1, 0, 1, 0)
+    loadingText.BackgroundTransparency = 1
+    loadingText.Text = "FINDING REMOTE EVENTS..."
+    loadingText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    loadingText.TextScaled = true
+    loadingText.Font = Enum.Font.SourceSansBold
+    loadingText.Parent = loadingFrame
+    local loadingCorner = Instance.new("UICorner")
+    loadingCorner.CornerRadius = UDim.new(0, 10)
+    loadingCorner.Parent = loadingFrame
+    return loadingGui
+end)
+if not success then
+    logError("Failed to create loading GUI: " .. tostring(result))
+end
+local loadingGui = result
+
+-- Search for RemoteEvents and build database
+local remoteEventDatabase = {}
+local function findRemoteEvents()
+    local function searchService(service)
+        if not service then return end
+        for _, item in pairs(service:GetDescendants()) do
+            if item:IsA("RemoteEvent") then
+                remoteEventDatabase[item.Name] = item
+                print("RemoteEventGUI: Found RemoteEvent " .. item.Name)
+            end
+        end
+    end
+    pcall(function()
+        searchService(ReplicatedStorage)
+        searchService(ServerStorage)
+    end)
+end
+
+-- Create main GUI after finding RemoteEvents
+pcall(function()
+    findRemoteEvents()
+    if loadingGui then
+        loadingGui:Destroy()
+        print("RemoteEventGUI: Loading GUI destroyed")
+    end
+end)
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "RemoteEventGUI"
+gui.IgnoreGuiInset = true
+gui.ResetOnSpawn = false
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+gui.Parent = playerGui
+gui.Enabled = true
+print("RemoteEventGUI: Main GUI created and enabled")
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0.3, 0, 0.5, 0)
+frame.Position = UDim2.new(0.35, 0, 0.25, 0)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 0
+frame.ZIndex = 1
+frame.Parent = gui
+local frameCorner = Instance.new("UICorner")
+frameCorner.CornerRadius = UDim.new(0, 12)
+frameCorner.Parent = frame
+
+-- Draggable functionality
+local dragging = false
+local dragStartPos
+local frameStartPos
+frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStartPos = input.Position
+        frameStartPos = frame.Position
+    end
+end)
+frame.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStartPos
+        frame.Position = UDim2.new(
+            frameStartPos.X.Scale,
+            frameStartPos.X.Offset + delta.X,
+            frameStartPos.Y.Scale,
+            frameStartPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+-- Event found indicator
+local eventIndicator = Instance.new("TextLabel")
+eventIndicator.Size = UDim2.new(0.9, 0, 0.05, 0)
+eventIndicator.Position = UDim2.new(0.05, 0, 0.0, 0)
+eventIndicator.BackgroundTransparency = 1
+eventIndicator.TextColor3 = Color3.fromRGB(255, 255, 255)
+eventIndicator.Text = "Enter an event name"
+eventIndicator.TextScaled = true
+eventIndicator.Font = Enum.Font.SourceSans
+eventIndicator.ZIndex = 1
+eventIndicator.Parent = frame
+
+-- TextBox for RemoteEvent name input
+local textBox = Instance.new("TextBox")
+textBox.Size = UDim2.new(0.9, 0, 0.15, 0)
+textBox.Position = UDim2.new(0.05, 0, 0.07, 0)
+textBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+textBox.PlaceholderText = "Enter RemoteEvent name (e.g., EventName)"
+textBox.TextScaled = true
+textBox.Font = Enum.Font.SourceSans
+textBox.ZIndex = 1
+textBox.Parent = frame
+local textBoxCorner = Instance.new("UICorner")
+textBoxCorner.CornerRadius = UDim.new(0, 8)
+textBoxCorner.Parent = textBox
+
+-- Update indicator when text changes
+textBox:GetPropertyChangedSignal("Text"):Connect(function()
+    pcall(function()
+        if textBox.Text == "" then
+            eventIndicator.Text = "Enter an event name"
+            eventIndicator.TextColor3 = Color3.fromRGB(255, 255, 255)
+        elseif remoteEventDatabase[textBox.Text] then
+            eventIndicator.Text = "Event found!"
+            eventIndicator.TextColor3 = Color3.fromRGB(0, 255, 0)
+        else
+            eventIndicator.Text = "Event not found"
+            eventIndicator.TextColor3 = Color3.fromRGB(255, 0, 0)
+        end
+    end)
+end)
+
+-- Buttons
+local fireButton = Instance.new("TextButton")
+fireButton.Size = UDim2.new(0.22, 0, 0.15, 0)
+fireButton.Position = UDim2.new(0.05, 0, 0.27, 0)
+fireButton.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
+fireButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+fireButton.Text = "Fire Event"
+fireButton.TextScaled = true
+fireButton.Font = Enum.Font.SourceSansBold
+fireButton.ZIndex = 1
+fireButton.Parent = frame
+local fireButtonCorner = Instance.new("UICorner")
+fireButtonCorner.CornerRadius = UDim.new(0, 8)
+fireButtonCorner.Parent = fireButton
+
+local fire10xButton = Instance.new("TextButton")
+fire10xButton.Size = UDim2.new(0.22, 0, 0.15, 0)
+fire10xButton.Position = UDim2.new(0.29, 0, 0.27, 0)
+fire10xButton.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
+fire10xButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+fire10xButton.Text = "Fire 10x"
+fire10xButton.TextScaled = true
+fire10xButton.Font = Enum.Font.SourceSansBold
+fire10xButton.ZIndex = 1
+fire10xButton.Parent = frame
+local fire10xButtonCorner = Instance.new("UICorner")
+fire10xButtonCorner.CornerRadius = UDim.new(0, 8)
+fire10xButtonCorner.Parent = fire10xButton
+
+local loopButton = Instance.new("TextButton")
+loopButton.Size = UDim2.new(0.22, 0, 0.15, 0)
+loopButton.Position = UDim2.new(0.53, 0, 0.27, 0)
+loopButton.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
+loopButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+loopButton.Text = "Loop Fire"
+loopButton.TextScaled = true
+loopButton.Font = Enum.Font.SourceSansBold
+loopButton.ZIndex = 1
+loopButton.Parent = frame
+local loopButtonCorner = Instance.new("UICorner")
+loopButtonCorner.CornerRadius = UDim.new(0, 8)
+loopButtonCorner.Parent = loopButton
+
+local spyButton = Instance.new("TextButton")
+spyButton.Size = UDim2.new(0.22, 0, 0.15, 0)
+spyButton.Position = UDim2.new(0.77, 0, 0.27, 0)
+spyButton.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
+spyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+spyButton.Text = "Remote Spy"
+spyButton.TextScaled = true
+spyButton.Font = Enum.Font.SourceSansBold
+spyButton.ZIndex = 1
+spyButton.Parent = frame
+local spyButtonCorner = Instance.new("UICorner")
+spyButtonCorner.CornerRadius = UDim.new(0, 8)
+spyButtonCorner.Parent = spyButton
+
+-- Help button and help frame
+local helpButton = Instance.new("TextButton")
+helpButton.Size = UDim2.new(0.1, 0, 0.1, 0)
+helpButton.Position = UDim2.new(0.85, 0, 0.07, 0)
+helpButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+helpButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+helpButton.Text = "?"
+helpButton.TextScaled = true
+helpButton.Font = Enum.Font.SourceSansBold
+helpButton.ZIndex = 1
+helpButton.Parent = frame
+local helpButtonCorner = Instance.new("UICorner")
+helpButtonCorner.CornerRadius = UDim.new(0, 8)
+helpButtonCorner.Parent = helpButton
+
+local helpFrame = Instance.new("Frame")
+helpFrame.Size = UDim2.new(0.8, 0, 0.6, 0)
+helpFrame.Position = UDim2.new(0.1, 0, 0.17, 0)
+helpFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+helpFrame.Visible = false
+helpFrame.ZIndex = 2
+helpFrame.Parent = frame
+local helpFrameCorner = Instance.new("UICorner")
+helpFrameCorner.CornerRadius = UDim.new(0, 8)
+helpFrameCorner.Parent = helpFrame
+
+local scrollingFrame = Instance.new("ScrollingFrame")
+scrollingFrame.Size = UDim2.new(0.9, 0, 0.9, 0)
+scrollingFrame.Position = UDim2.new(0.05, 0, 0.05, 0)
+scrollingFrame.BackgroundTransparency = 1
+scrollingFrame.ScrollBarThickness = 5
+scrollingFrame.ZIndex = 2
+scrollingFrame.Parent = helpFrame
+
+local helpText = Instance.new("TextLabel")
+helpText.Size = UDim2.new(1, 0, 0, 450)
+helpText.BackgroundTransparency = 1
+helpText.TextColor3 = Color3.fromRGB(255, 255, 255)
+helpText.Text = [[
+RemoteEvent GUI Help
+
+1. **How to Use the GUI**:
+   - Enter the RemoteEvent name (e.g., "EventName").
+   - Check the indicator to see if the event is found.
+   - 'Fire Event': Fires the event once.
+   - 'Fire 10x': Fires the event 10 times.
+   - 'Loop Fire': Starts/stops looping the event.
+   - 'Remote Spy': Shows a list of fired RemoteEvents.
+
+2. **Toggling the GUI**:
+   - Press Left Control to show/hide.
+
+3. **Looping Behavior**:
+   - Looping continues until stopped.
+   - Re-enter the same event name and click 'Loop Fire' to stop.
+   - Entering a new event switches the loop to the new event.
+
+4. **Finding RemoteEvents**:
+   - Searches ReplicatedStorage and ServerStorage, including all folders.
+   - Use 'Can't find RemoteEvent?' to browse all found events.
+   - Right-click an event in the list to delete it.
+
+5. **Remote Spy**:
+   - Tracks RemoteEvents fired by the player or server.
+   - Displays event names and source (Player/Server) in a list.
+   - Click an event to autofill the textbox.
+
+6. **Deleting RemoteEvents**:
+   - Right-click an event in the 'Can't find RemoteEvent?' list to open a menu.
+   - Confirm deletion to remove the event from the game and list.
+
+7. **Notes**:
+   - Only enter the event name, not the full path.
+   - Fires events without arguments.
+   - Check executor output for errors if issues occur.
+]]
+helpText.TextWrapped = true
+helpText.TextScaled = false
+helpText.TextSize = 16
+helpText.Font = Enum.Font.SourceSans
+helpText.TextXAlignment = Enum.TextXAlignment.Left
+helpText.TextYAlignment = Enum.TextYAlignment.Top
+helpText.ZIndex = 2
+helpText.Parent = scrollingFrame
+
+-- Update ScrollingFrame CanvasSize
+local function updateCanvasSize()
+    pcall(function()
+        scrollingFrame.CanvasSize = UDim2.new(0, 0, 0, helpText.TextBounds.Y + 20)
+    end)
+end
+updateCanvasSize()
+helpText:GetPropertyChangedSignal("TextBounds"):Connect(updateCanvasSize)
+
+-- Can't find RemoteEvent button and event list frame
+local eventListButton = Instance.new("TextButton")
+eventListButton.Size = UDim2.new(0.44, 0, 0.1, 0)
+eventListButton.Position = UDim2.new(0.05, 0, 0.73, 0)
+eventListButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+eventListButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+eventListButton.Text = "Can't find RemoteEvent?"
+eventListButton.TextScaled = true
+eventListButton.Font = Enum.Font.SourceSansBold
+eventListButton.ZIndex = 1
+eventListButton.Parent = frame
+local eventListButtonCorner = Instance.new("UICorner")
+eventListButtonCorner.CornerRadius = UDim.new(0, 8)
+eventListButtonCorner.Parent = eventListButton
+
+local eventListFrame = Instance.new("Frame")
+eventListFrame.Size = UDim2.new(0.8, 0, 0.6, 0)
+eventListFrame.Position = UDim2.new(0.1, 0, 0.17, 0)
+eventListFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+eventListFrame.Visible = false
+eventListFrame.ZIndex = 2
+eventListFrame.Parent = frame
+local eventListFrameCorner = Instance.new("UICorner")
+eventListFrameCorner.CornerRadius = UDim.new(0, 8)
+eventListFrameCorner.Parent = eventListFrame
+
+local eventListScrolling = Instance.new("ScrollingFrame")
+eventListScrolling.Size = UDim2.new(0.9, 0, 0.9, 0)
+eventListScrolling.Position = UDim2.new(0.05, 0, 0.05, 0)
+eventListScrolling.BackgroundTransparency = 1
+eventListScrolling.ScrollBarThickness = 5
+eventListScrolling.ZIndex = 2
+eventListScrolling.Parent = eventListFrame
+
+-- Remote Spy frame
+local spyFrame = Instance.new("Frame")
+spyFrame.Size = UDim2.new(0.8, 0, 0.6, 0)
+spyFrame.Position = UDim2.new(0.1, 0, 0.17, 0)
+spyFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+spyFrame.Visible = false
+spyFrame.ZIndex = 2
+spyFrame.Parent = frame
+local spyFrameCorner = Instance.new("UICorner")
+spyFrameCorner.CornerRadius = UDim.new(0, 8)
+spyFrameCorner.Parent = spyFrame
+print("RemoteEventGUI: Spy frame created")
+
+local spyScrolling = Instance.new("ScrollingFrame")
+spyScrolling.Size = UDim2.new(0.9, 0, 0.9, 0)
+spyScrolling.Position = UDim2.new(0.05, 0, 0.05, 0)
+spyScrolling.BackgroundTransparency = 1
+spyScrolling.ScrollBarThickness = 5
+spyScrolling.ZIndex = 2
+spyScrolling.Parent = spyFrame
+
+-- Delete confirmation frame
+local deleteFrame = nil
+local function createDeleteMenu(eventName, eventButton, eventInstance)
+    if deleteFrame then
+        deleteFrame:Destroy()
+    end
+    deleteFrame = Instance.new("Frame")
+    deleteFrame.Size = UDim2.new(0.6, 0, 0.3, 0)
+    deleteFrame.Position = UDim2.new(0.2, 0, 0.35, 0)
+    deleteFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    deleteFrame.BorderSizePixel = 0
+    deleteFrame.ZIndex = 3
+    deleteFrame.Parent = frame
+    local deleteFrameCorner = Instance.new("UICorner")
+    deleteFrameCorner.CornerRadius = UDim.new(0, 8)
+    deleteFrameCorner.Parent = deleteFrame
+
+    local deleteText = Instance.new("TextLabel")
+    deleteText.Size = UDim2.new(0.9, 0, 0.4, 0)
+    deleteText.Position = UDim2.new(0.05, 0, 0.05, 0)
+    deleteText.BackgroundTransparency = 1
+    deleteText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    deleteText.Text = "Would you like to delete " .. eventName .. "?"
+    deleteText.TextScaled = true
+    deleteText.Font = Enum.Font.SourceSans
+    deleteText.ZIndex = 3
+    deleteText.Parent = deleteFrame
+
+    local yesButton = Instance.new("TextButton")
+    yesButton.Size = UDim2.new(0.4, 0, 0.3, 0)
+    yesButton.Position = UDim2.new(0.05, 0, 0.55, 0)
+    yesButton.BackgroundColor3 = Color3.fromRGB(0, 120, 215)
+    yesButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    yesButton.Text = "Yes"
+    yesButton.TextScaled = true
+    yesButton.Font = Enum.Font.SourceSansBold
+    yesButton.ZIndex = 3
+    yesButton.Parent = deleteFrame
+    local yesButtonCorner = Instance.new("UICorner")
+    yesButtonCorner.CornerRadius = UDim.new(0, 8)
+    yesButtonCorner.Parent = yesButton
+
+    local noButton = Instance.new("TextButton")
+    noButton.Size = UDim2.new(0.4, 0, 0.3, 0)
+    noButton.Position = UDim2.new(0.55, 0, 0.55, 0)
+    noButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    noButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    noButton.Text = "No"
+    noButton.TextScaled = true
+    noButton.Font = Enum.Font.SourceSansBold
+    noButton.ZIndex = 3
+    noButton.Parent = deleteFrame
+    local noButtonCorner = Instance.new("UICorner")
+    noButtonCorner.CornerRadius = UDim.new(0, 8)
+    noButtonCorner.Parent = noButton
+
+    yesButton.MouseButton1Click:Connect(function()
+        pcall(function()
+            if eventInstance and eventInstance.Parent then
+                eventInstance:Destroy()
+                remoteEventDatabase[eventName] = nil
+                eventButton:Destroy()
+                populateEventList()
+            end
+            deleteFrame:Destroy()
+            deleteFrame = nil
+        end)
+    end)
+
+    noButton.MouseButton1Click:Connect(function()
+        pcall(function()
+            deleteFrame:Destroy()
+            deleteFrame = nil
+        end)
+    end)
+end
+
+-- Populate event list
+local function populateEventList()
+    pcall(function()
+        for _, child in pairs(eventListScrolling:GetChildren()) do
+            if child:IsA("TextButton") then
+                child:Destroy()
+            end
+        end
+        local yOffset = 0
+        for eventName, eventInstance in pairs(remoteEventDatabase) do
+            local eventButton = Instance.new("TextButton")
+            eventButton.Size = UDim2.new(1, 0, 0, 30)
+            eventButton.Position = UDim2.new(0, 0, 0, yOffset)
+            eventButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+            eventButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            eventButton.Text = eventName
+            eventButton.TextScaled = true
+            eventButton.Font = Enum.Font.SourceSans
+            eventButton.ZIndex = 2
+            eventButton.Parent = eventListScrolling
+            local eventButtonCorner = Instance.new("UICorner")
+            eventButtonCorner.CornerRadius = UDim.new(0, 6)
+            eventButtonCorner.Parent = eventButton
+            eventButton.MouseButton1Click:Connect(function()
+                pcall(function()
+                    textBox.Text = eventName
+                    eventListFrame.Visible = false
+                end)
+            end)
+            eventButton.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton2 then
+                    pcall(function()
+                        createDeleteMenu(eventName, eventButton, eventInstance)
+                    end)
+                end
+            end)
+            yOffset = yOffset + 35
+        end
+        eventListScrolling.CanvasSize = UDim2.new(0, 0, 0, yOffset)
+    end)
+end
+pcall(populateEventList)
+
+-- Remote Spy functionality
+local spyEvents = {}
+local spyConnections = {}
+local function populateSpyList()
+    pcall(function()
+        for _, child in pairs(spyScrolling:GetChildren()) do
+            if child:IsA("TextButton") then
+                child:Destroy()
+            end
+        end
+        local yOffset = 0
+        for _, eventInfo in ipairs(spyEvents) do
+            local eventButton = Instance.new("TextButton")
+            eventButton.Size = UDim2.new(1, 0, 0, 30)
+            eventButton.Position = UDim2.new(0, 0, 0, yOffset)
+            eventButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+            eventButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            eventButton.Text = eventInfo.name .. " (" .. eventInfo.source .. ")"
+            eventButton.TextScaled = true
+            eventButton.Font = Enum.Font.SourceSans
+            eventButton.ZIndex = 2
+            eventButton.Parent = spyScrolling
+            local eventButtonCorner = Instance.new("UICorner")
+            eventButtonCorner.CornerRadius = UDim.new(0, 6)
+            eventButtonCorner.Parent = eventButton
+            eventButton.MouseButton1Click:Connect(function()
+                pcall(function()
+                    textBox.Text = eventInfo.name
+                    spyFrame.Visible = false
+                    print("RemoteEventGUI: Spy event selected: " .. eventInfo.name)
+                end)
+            end)
+            yOffset = yOffset + 35
+        end
+        spyScrolling.CanvasSize = UDim2.new(0, 0, 0, yOffset)
+        print("RemoteEventGUI: Spy list updated, " .. #spyEvents .. " events")
+    end)
+end
+
+local function setupRemoteSpy()
+    pcall(function()
+        for _, connection in pairs(spyConnections) do
+            connection:Disconnect()
+        end
+        spyConnections = {}
+        spyEvents = {}
+        for eventName, eventInstance in pairs(remoteEventDatabase) do
+            local clientConnection = eventInstance.OnClientEvent:Connect(function(...)
+                pcall(function()
+                    table.insert(spyEvents, {name = eventName, source = "Server"})
+                    populateSpyList()
+                    print("RemoteEventGUI: Server fired event: " .. eventName)
+                end)
+            end)
+            table.insert(spyConnections, clientConnection)
+        end
+    end)
+end
+pcall(setupRemoteSpy)
+
+-- Toggle event list frame
+eventListButton.MouseButton1Click:Connect(function()
+    pcall(function()
+        eventListFrame.Visible = not eventListFrame.Visible
+        helpFrame.Visible = false
+        spyFrame.Visible = false
+        print("RemoteEventGUI: Event list frame toggled, Visible: " .. tostring(eventListFrame.Visible))
+    end)
+end)
+
+-- Toggle help frame
+helpButton.MouseButton1Click:Connect(function()
+    pcall(function()
+        helpFrame.Visible = not helpFrame.Visible
+        eventListFrame.Visible = false
+        spyFrame.Visible = false
+        print("RemoteEventGUI: Help frame toggled, Visible: " .. tostring(helpFrame.Visible))
+    end)
+end)
+
+-- Toggle spy frame
+spyButton.MouseButton1Click:Connect(function()
+    pcall(function()
+        spyFrame.Visible = not spyFrame.Visible
+        helpFrame.Visible = false
+        eventListFrame.Visible = false
+        print("RemoteEventGUI: Spy frame toggled, Visible: " .. tostring(spyFrame.Visible))
+    end)
+end)
+
+-- Toggle GUI with Left Control
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.LeftControl then
+        pcall(function()
+            gui.Enabled = not gui.Enabled
+            print("RemoteEventGUI: Main GUI toggled, Enabled: " .. tostring(gui.Enabled))
+        end)
+    end
+end)
+
+-- RemoteEvent handling
+local loopingEvent = nil
+local loopingConnection = nil
+local function getRemoteEvent(name)
+    return remoteEventDatabase[name]
+end
+
+fireButton.MouseButton1Click:Connect(function()
+    pcall(function()
+        local event = getRemoteEvent(textBox.Text)
+        if event then
+            event:FireServer()
+            table.insert(spyEvents, {name = textBox.Text, source = "Player"})
+            populateSpyList()
+            print("RemoteEventGUI: Fired event: " .. textBox.Text)
+        else
+            eventIndicator.Text = "Event not found"
+            eventIndicator.TextColor3 = Color3.fromRGB(255, 0, 0)
+        end
+    end)
+end)
+
+fire10xButton.MouseButton1Click:Connect(function()
+    pcall(function()
+        local event = getRemoteEvent(textBox.Text)
+        if event then
+            for i = 1, 10 do
+                event:FireServer()
+                table.insert(spyEvents, {name = textBox.Text, source = "Player"})
+                task.wait(0.1)
+            end
+            populateSpyList()
+            print("RemoteEventGUI: Fired event 10x: " .. textBox.Text)
+        else
+            eventIndicator.Text = "Event not found"
+            eventIndicator.TextColor3 = Color3.fromRGB(255, 0, 0)
+        end
+    end)
+end)
+
+loopButton.MouseButton1Click:Connect(function()
+    pcall(function()
+        local event = getRemoteEvent(textBox.Text)
+        if not event then
+            eventIndicator.Text = "Event not found"
+            eventIndicator.TextColor3 = Color3.fromRGB(255, 0, 0)
+            return
+        end
+        if loopingEvent == event then
+            if loopingConnection then
+                loopingConnection:Disconnect()
+                loopingConnection = nil
+                loopingEvent = nil
+                loopButton.Text = "Loop Fire"
+                print("RemoteEventGUI: Stopped looping event: " .. textBox.Text)
+            end
+        else
+            if loopingConnection then
+                loopingConnection:Disconnect()
+            end
+            loopingEvent = event
+            loopingConnection = RunService.Heartbeat:Connect(function()
+                pcall(function()
+                    event:FireServer()
+                    table.insert(spyEvents, {name = textBox.Text, source = "Player"})
+                    populateSpyList()
+                end)
+            end)
+            loopButton.Text = "Stop Loop"
+            print("RemoteEventGUI: Started looping event: " .. textBox.Text)
+        end
+    end)
+end)
